@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 
-if (!defined('PRODUCE_REQUEST_ID')) {
-	define('PRODUCE_REQUEST_ID', 0);
-}
-
 if (!function_exists('gzdecode')) {
 	function gzdecode($msg) {
 		return gzinflate(substr($msg, 10));
@@ -38,13 +34,13 @@ class Kafka_EncoderTest extends PHPUnit_Framework_TestCase
 		$encoded = Kafka_Encoder::encode_message($test);
 		$this->assertEquals(6 + strlen($test), strlen($encoded));
 	}
-	
+
 	public function testByteArrayContainsString() {
 		$test = 'a sample string';
 		$encoded = Kafka_Encoder::encode_message($test);
 		$this->assertContains($test, $encoded);
 	}
-	
+
 	public function testEncodedMessages() {
 		$topic     = 'sample topic';
 		$partition = 1;

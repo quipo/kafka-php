@@ -25,9 +25,6 @@ set_include_path(
 );
 require 'autoloader.php';
 
-define('PRODUCE_REQUEST_ID', 0);
-
-
 $host = 'localhost';
 $port = 9092;
 $topic = 'test';
