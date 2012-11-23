@@ -29,26 +29,35 @@ $host = 'localhost';
 $zkPort  = 2181; //zookeeper
 $kPort   = 9092; //kafka server
 $topic   = 'test';
-$maxSize = 1000000;
-$socketTimeout = 5;
+$maxSize = 10000000;
+$socketTimeout = 2;
 
 $offset    = 0;
 $partition = 0;
+$nMessages = 0;
 
-$consumer = new Kafka_SimpleConsumer($host, $kPort, $socketTimeout, $maxSize);
 while (true) {
-	//create a fetch request for topic "test", partition 0, current offset and fetch size of 1MB
-	$fetchRequest = new Kafka_FetchRequest($topic, $partition, $offset, $maxSize);
-	//get the message set from the consumer and print them out
-	$partialOffset = 0;
-	$messages = $consumer->fetch($fetchRequest);
-	foreach ($messages as $msg) {
-		echo "\nconsumed[$offset][$partialOffset]: " . $msg->payload();
-		$partialOffset = $messages->validBytes();
+	try {
+		$consumer = new Kafka_SimpleConsumer($host, $kPort, $socketTimeout, $maxSize);
+		//create a fetch request for topic "test", partition 0, current offset and fetch size of 1MB
+		$fetchRequest = new Kafka_FetchRequest($topic, $partition, $offset, $maxSize);
+		//get the message set from the consumer and print them out
+		$partialOffset = 0;
+		$messages = $consumer->fetch($fetchRequest);
+		foreach ($messages as $msg) {
+			++$nMessages;
+			echo "\nconsumed[$offset][$partialOffset][msg #{$nMessages}]: " . $msg->payload();
+			$partialOffset = $messages->validBytes();
+		}
+		//advance the offset after consuming each message
+		$offset += $messages->validBytes();
+		//echo "\n---[Advancing offset to $offset]------(".date('H:i:s').")";
+		unset($fetchRequest);
+		unset($consumer);
+		//sleep(2);
+	} catch (Exception $e) {
+		// probably consumed all items in the queue.
+		echo "\nERROR: " . $e->getMessage()."\n".$e->getTraceAsString()."\n";
+		sleep(2);
 	}
-	//advance the offset after consuming each message
-	$offset += $messages->validBytes();
-	//echo "\n---[Advancing offset to $offset]------(".date('H:i:s').")";
-	unset($fetchRequest);
-	sleep(2);
 }
