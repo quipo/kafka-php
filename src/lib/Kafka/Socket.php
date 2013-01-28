@@ -44,7 +44,7 @@ class Kafka_Socket
 	 * Recv timeout in seconds
 	 *
 	 * Combined with recvTimeoutUsec this is used for recv timeouts.
-	 * 
+	 *
 	 * @var int
 	 */
 	private $recvTimeoutSec = 0;
@@ -139,7 +139,7 @@ class Kafka_Socket
 		if ($this->port <= 0) {
 			throw new Kafka_Exception_Socket_Connection('Cannot open without port');
 		}
-		
+
 		$this->stream = @fsockopen(
 			$this->host,
 			$this->port,
@@ -193,7 +193,7 @@ class Kafka_Socket
 				if ($chunk === false) {
 					throw new Kafka_Exception_Socket_EOF('Could not read '.$len.' bytes from stream (no data)');
 				}
-				if ($chunk == '' && feof($this->stream)) {
+				if ($chunk == '' /* && feof($this->stream) */ ) {
 					break; // unexpected EOF
 				}
 				$data .= $chunk;
