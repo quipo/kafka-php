@@ -191,10 +191,15 @@ class Kafka_Socket
 			while ($remainingBytes > 0) {
 				$chunk = fread($this->stream, $remainingBytes);
 				if ($chunk === false) {
+					$this->close();
 					throw new Kafka_Exception_Socket_EOF('Could not read '.$len.' bytes from stream (no data)');
 				}
-				if ($chunk == '' /* && feof($this->stream) */ ) {
-					break; // unexpected EOF
+				if (strlen($chunk) === 0) {
+					if (feof($this->stream)) {
+						$this->close();
+						throw new Kafka_Exception_Socket_EOF('Unexpected EOF whilst reading '.$len.' bytes from stream (no data)');
+					}
+					break; // end of ByteBuffer?
 				}
 				$data .= $chunk;
 				$remainingBytes -= strlen($chunk);
@@ -209,9 +214,11 @@ class Kafka_Socket
 		if (false !== $readable) {
 			$res = stream_get_meta_data($this->stream);
 			if (!empty($res['timed_out'])) {
+				$this->close();
 				throw new Kafka_Exception_Socket_Timeout('Timed out reading '.$len.' bytes from stream');
 			}
 		}
+		$this->close();
 		throw new Kafka_Exception_Socket_EOF('Could not read '.$len.' bytes from stream (not readable)');
 	}
 
