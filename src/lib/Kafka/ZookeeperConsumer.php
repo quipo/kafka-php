@@ -173,11 +173,15 @@ class Kafka_ZookeeperConsumer implements Iterator
 			$it->consumer->close();
 			++$this->idx;
 			if ($this->idx === $this->nIterators) {
+				$this->idx = 0;
 				// if we looped through all brokers/partitions and we did get data
 				// from at least one of them, reset the iterator and do another loop
 				if ($this->hasMore) {
 					$this->hasMore = false;
-					$this->idx = 0;
+				} else if ($this->getRemainingSize() > 1048576) {
+					// we often get stuck, i.e. we fetch 0 bytes even if there is more data... keep trying
+				} else {
+					return false;
 				}
 			}
 		}
@@ -229,7 +233,7 @@ class Kafka_ZookeeperConsumer implements Iterator
 			try {
 				$newOffset = $it->offset + $it->uncommittedOffset;
 				$request = new Kafka_FetchRequest($this->topic, $it->partition, $newOffset, $this->maxBatchSize);
-				$it->messages = $it->consumer->fetch($request);
+				$it->messages = $consumer->fetch($request);
 			} catch (Kafka_Exception_OffsetOutOfRange $e) {
 				$offsets = $consumer->getOffsetsBefore($this->topic, $it->partition, Kafka_SimpleConsumer::OFFSET_FIRST, 1);
 				if (count($offsets) > 0) {
@@ -250,8 +254,13 @@ class Kafka_ZookeeperConsumer implements Iterator
 	 * @return integer
 	 */
 	public function getRemainingSize() {
-		if (0 == $this->nIterators) {
-			$this->rewind();	// initialise simple consumers
+		try {
+			if (0 == $this->nIterators) {
+				$this->rewind();	// initialise simple consumers
+			}
+		} catch (Kafka_Exception_InvalidTopic $e) {
+			$logMsg = 'Invalid topic from ZookeeperConsumer::rewind(): Most likely cause is no topic yet as there is no data';
+			error_log($logMsg);
 		}
 		$totalSize = 0;
 		foreach ($this->iterators as $it) {
@@ -279,6 +288,7 @@ class Kafka_ZookeeperConsumer implements Iterator
 	 */
 	public function rewind() {
 		$this->iterators = array();
+		$this->nIterators = 0;
 		foreach ($this->topicRegistry->partitions($this->topic) as $broker => $nPartitions) {
 			for ($partition = 0; $partition < $nPartitions; ++$partition) {
 				list($host, $port) = explode(':', $this->brokerRegistry->address($broker));
