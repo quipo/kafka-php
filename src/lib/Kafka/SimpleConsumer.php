@@ -214,7 +214,8 @@ class Kafka_SimpleConsumer
 	protected function getResponseSize() {
 		$this->connect();
 		$size = $this->socket->read(4, true);
-		$size = array_shift(unpack('N', $size));
+		$unpack = unpack('N', $size);
+		$size = array_shift($unpack);
 		if ($size <= 0) {
 			throw new Kafka_Exception_OutOfRange($size . ' is not a valid response size');
 		}
@@ -228,7 +229,9 @@ class Kafka_SimpleConsumer
 	 */
 	protected function getResponseCode() {
 		$this->connect();
-		return array_shift(unpack('n', $this->socket->read(2, true)));
+		$data = $this->socket->read(2, true);
+		$unpack = unpack('n', $data);
+		return array_shift($unpack);
 	}
 
 	/**

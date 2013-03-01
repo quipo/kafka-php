@@ -197,15 +197,16 @@ class Kafka_Socket
 				if (strlen($chunk) === 0) {
 					if (feof($this->stream)) {
 						$this->close();
-						throw new Kafka_Exception_Socket_EOF('Unexpected EOF whilst reading '.$len.' bytes from stream (no data)');
+						throw new Kafka_Exception_Socket_EOF('Unexpected EOF while reading '.$len.' bytes from stream (no data)');
 					}
-					break; // end of ByteBuffer?
+					break;
 				}
 				$data .= $chunk;
 				$remainingBytes -= strlen($chunk);
 			}
 			if ($len === $remainingBytes || ($verifyExactLength && $len !== strlen($data))) {
 				// couldn't read anything at all OR reached EOF sooner than expected
+				$this->close();
 				throw new Kafka_Exception_Socket_EOF('Read ' . strlen($data) . ' bytes instead of the requested ' . $len . ' bytes');
 			}
 

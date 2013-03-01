@@ -108,7 +108,8 @@ class Kafka_OffsetRequest extends Kafka_Request
 	 * @return array
 	 */
 	static public function deserializeOffsetArray(Kafka_Socket $socket) {
-		$nOffsets = array_shift(unpack('N', $socket->read(4)));
+		$unpack = unpack('N', $socket->read(4));
+		$nOffsets = array_shift($unpack);
 		if ($nOffsets < 0) {
 			throw new Kafka_Exception_OutOfRange($nOffsets . ' is not a valid number of offsets');
 		}

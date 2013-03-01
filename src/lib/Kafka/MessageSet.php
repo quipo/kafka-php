@@ -70,7 +70,9 @@ class Kafka_MessageSet implements Iterator
 	 * @throws Kafka_Exception when size is <=0 or >= $maxSize
 	 */
 	protected function getMessageSize() {
-		$size = array_shift(unpack('N', $this->socket->read(4, true)));
+		$data = $this->socket->read(4, true);
+		$unpack = unpack('N', $data);
+		$size = array_shift($unpack);
 		if ($size <= 0) {
 			throw new Kafka_Exception_OutOfRange($size . ' is not a valid message size');
 		}
@@ -90,7 +92,7 @@ class Kafka_MessageSet implements Iterator
 			$msg = $this->socket->read($size, true);
 		} catch (Kafka_Exception_Socket_EOF $e) {
 			$size = isset($size) ? $size : 'enough';
-			$logMsg = 'Cannot read ' . $size . ' bytes, the message is likely bigger than the buffer';
+			$logMsg = 'Cannot read ' . $size . ' bytes, the message is likely bigger than the buffer - original exception: ' . $e->getMessage();
 			throw new Kafka_Exception_OutOfRange($logMsg);
 		}
 		$this->validByteCount += 4 + $size;

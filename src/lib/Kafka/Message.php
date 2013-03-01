@@ -58,13 +58,16 @@ class Kafka_Message
 	 * @param string $data Message payload
 	 */
 	public function __construct($data) {
-		$this->magic = array_shift(unpack('C', substr($data, 0, 1)));
+		$unpack = unpack('C', substr($data, 0, 1));
+		$this->magic = array_shift($unpack);
 		if ($this->magic == 0) {
 			$this->crc         = array_shift(unpack('N', substr($data, 1, 4)));
 			$this->payload     = substr($data, 5);
 		} else {
-			$this->compression = array_shift(unpack('C', substr($data, 1, 1)));
-			$this->crc         = array_shift(unpack('N', substr($data, 2, 4)));
+			$compression = unpack('C', substr($data, 1, 1));
+			$this->compression = array_shift($compression);
+			$crc = unpack('N', substr($data, 2, 4));
+			$this->crc         = array_shift($crc);
 			$this->payload     = substr($data, 6);
 		}
 		$this->size  = strlen($this->payload);
