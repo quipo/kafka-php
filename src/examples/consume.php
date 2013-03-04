@@ -36,9 +36,9 @@ $offset    = 0;
 $partition = 0;
 $nMessages = 0;
 
+$consumer = new Kafka_SimpleConsumer($host, $kPort, $socketTimeout, $maxSize);
 while (true) {
 	try {
-		$consumer = new Kafka_SimpleConsumer($host, $kPort, $socketTimeout, $maxSize);
 		//create a fetch request for topic "test", partition 0, current offset and fetch size of 1MB
 		$fetchRequest = new Kafka_FetchRequest($topic, $partition, $offset, $maxSize);
 		//get the message set from the consumer and print them out
@@ -53,7 +53,6 @@ while (true) {
 		$offset += $messages->validBytes();
 		//echo "\n---[Advancing offset to $offset]------(".date('H:i:s').")";
 		unset($fetchRequest);
-		unset($consumer);
 		//sleep(2);
 	} catch (Exception $e) {
 		// probably consumed all items in the queue.
