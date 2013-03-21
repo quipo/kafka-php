@@ -65,6 +65,16 @@ class Kafka_RequestTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($long, Kafka_Request::unpackLong64bigendian($encoded));
 	}
 
+	public function testEncodeDecode64bitLongUnsignedLargerThan2_32() {
+		$long = pow(2, 35);
+		$encoded = Kafka_Request::packLong64bigendian($long);
+		$this->assertEquals($long, Kafka_Request::unpackLong64bigendian($encoded));
+
+		$long = pow(2, 37);
+		$encoded = Kafka_Request::packLong64bigendian($long);
+		$this->assertEquals($long, Kafka_Request::unpackLong64bigendian($encoded));
+	}
+
 	public function testEncodeDecode64bitLongSigned() {
 		$long = -2147483648;
 		$encoded = Kafka_Request::packLong64bigendian($long);

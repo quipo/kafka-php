@@ -31,24 +31,24 @@ abstract class Kafka_Request
 	 * @var string
 	 */
 	protected $topic;
-	
+
 	/**
 	 * @var integer
 	 */
 	protected $partition;
-	
+
 	/**
 	 * Write the request to the output stream
-	 * 
+	 *
 	 * @param Kafka_Socket $socket Output stream
-	 * 
+	 *
 	 * @return void
 	 */
 	abstract public function writeTo(Kafka_Socket $socket);
 
 	/**
 	 * Get request size in bytes
-	 * 
+	 *
 	 * @return integer
 	 */
 	abstract public function sizeInBytes();
@@ -80,13 +80,13 @@ abstract class Kafka_Request
 	 * @return bytes
 	 */
 	static public function packLong64bigendian($big) {
-		$left  = 0xffffffff00000000; 
-		$right = 0x00000000ffffffff; 
+		$left  = 0xffffffff00000000;
+		$right = 0x00000000ffffffff;
 
-		$l = ($big & $left) >> 32; 
-		$r = $big & $right; 
+		$l = ($big & $left) >> 32;
+		$r = $big & $right;
 
-		return pack('NN', $l, $r); 
+		return pack('NN', $l, $r);
 	}
 
 	/**
@@ -98,6 +98,6 @@ abstract class Kafka_Request
 	 */
 	static public function unpackLong64bigendian($bytes) {
 		$set = unpack('N2', $bytes);
-		return $original = $set[1] << 32 | $set[2];
+		return $original = ($set[1] & 0xFFFFFFFF) << 32 | ($set[2] & 0xFFFFFFFF);
 	}
 }
