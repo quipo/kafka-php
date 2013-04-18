@@ -56,7 +56,7 @@ while (true) {
 		//sleep(2);
 	} catch (Exception $e) {
 		// probably consumed all items in the queue.
-		echo "\nERROR: " . $e->getMessage()."\n".$e->getTraceAsString()."\n";
+		echo "\nERROR: " . get_class($e) . ': ' . $e->getMessage()."\n".$e->getTraceAsString()."\n";
 		sleep(2);
 	}
 }
