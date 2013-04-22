@@ -147,6 +147,9 @@ class Kafka_Socket
 			$errstr,
 			$this->sendTimeoutSec + ($this->sendTimeoutUsec / 1000000)
 		);
+
+		// Set to blocking mode when keeping a persistent connection,
+		// otherwise leave it as non-blocking when polling
 		@stream_set_blocking($this->stream, 0);
 		//socket_set_option($this->stream, SOL_TCP, TCP_NODELAY, 1);
 		//socket_set_option($this->stream, SOL_TCP, SO_KEEPALIVE, 1);
@@ -182,6 +185,7 @@ class Kafka_Socket
 	 * @throws Kafka_Exception_Socket
 	 */
 	public function read($len, $verifyExactLength = false) {
+		$retries = 40; // sometimes we read empty chunks from the socket, but we shouldn't give up immediately
 		$null = null;
 		$read = array($this->stream);
 		$readable = @stream_select($read, $null, $null, $this->recvTimeoutSec, $this->recvTimeoutUsec);
@@ -195,11 +199,14 @@ class Kafka_Socket
 					throw new Kafka_Exception_Socket_EOF('Could not read '.$len.' bytes from stream (no data)');
 				}
 				if (strlen($chunk) === 0) {
+					usleep(5000);
 					if (feof($this->stream)) {
 						$this->close();
 						throw new Kafka_Exception_Socket_EOF('Unexpected EOF while reading '.$len.' bytes from stream (no data)');
 					}
-					break;
+					if (--$retries < 0) {
+						break;
+					}
 				}
 				$data .= $chunk;
 				$remainingBytes -= strlen($chunk);
