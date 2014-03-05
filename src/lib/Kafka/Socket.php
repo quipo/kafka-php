@@ -242,23 +242,31 @@ class Kafka_Socket
 		$null = null;
 		$write = array($this->stream);
 
-		// wait for stream to become available for writing
-		$writable = @stream_select($null, $write, $null, $this->sendTimeoutSec, $this->sendTimeoutUsec);
-		if ($writable > 0) {
-			// write buffer to stream
-			$written = fwrite($this->stream, $buf);
-			if ($written === -1 || $written === false) {
-				throw new Kafka_Exception_Socket('Could not write ' . strlen($buf) . ' bytes to stream');
+		// fwrite to a socket may be partial, so loop until we
+		// are done with the entire buffer
+		$written = 0;
+		$buflen = strlen($buf);
+		while ( $written < $buflen ) {
+			// wait for stream to become available for writing
+			$writable = @stream_select($null, $write, $null, $this->sendTimeoutSec, $this->sendTimeoutUsec);
+			if ($writable > 0) {
+				// write remaining buffer bytes to stream
+				$wrote = fwrite($this->stream, substr($buf, $written));
+				if ($wrote === -1 || $wrote === false) {
+					throw new Kafka_Exception_Socket('Could not write ' . strlen($buf) . ' bytes to stream, completed writing only ' . $written . ' bytes');
+				}
+				$written += $wrote;
+				continue;
 			}
-			return $written;
-		}
-		if (false !== $writable) {
-			$res = stream_get_meta_data($this->stream);
-			if (!empty($res['timed_out'])) {
-				throw new Kafka_Exception_Socket_Timeout('Timed out writing ' . strlen($buf) . ' bytes to stream');
+			if (false !== $writable) {
+				$res = stream_get_meta_data($this->stream);
+				if (!empty($res['timed_out'])) {
+					throw new Kafka_Exception_Socket_Timeout('Timed out writing ' . strlen($buf) . ' bytes to stream after writing ' . $written . ' bytes');
+				}
 			}
+			throw new Kafka_Exception_Socket('Could not write ' . strlen($buf) . ' bytes to stream');
 		}
-		throw new Kafka_Exception_Socket('Could not write ' . strlen($buf) . ' bytes to stream');
+		return $written;
 	}
 
 	/**
