@@ -185,7 +185,6 @@ class Kafka_Socket
 	 * @throws Kafka_Exception_Socket
 	 */
 	public function read($len, $verifyExactLength = false) {
-		$retries = 40; // sometimes we read empty chunks from the socket, but we shouldn't give up immediately
 		$null = null;
 		$read = array($this->stream);
 		$readable = @stream_select($read, $null, $null, $this->recvTimeoutSec, $this->recvTimeoutUsec);
@@ -199,14 +198,17 @@ class Kafka_Socket
 					throw new Kafka_Exception_Socket_EOF('Could not read '.$len.' bytes from stream (no data)');
 				}
 				if (strlen($chunk) === 0) {
-					usleep(5000);
+					// Zero bytes because of EOF?
 					if (feof($this->stream)) {
 						$this->close();
 						throw new Kafka_Exception_Socket_EOF('Unexpected EOF while reading '.$len.' bytes from stream (no data)');
 					}
-					if (--$retries < 0) {
-						break;
+					// Otherwise wait for bytes
+					$readable = @stream_select($read, $null, $null, $this->recvTimeoutSec, $this->recvTimeoutUsec);
+					if ($readable !== 1) {
+						throw new Kafka_Exception_Socket_Timeout('Timed out reading socket while reading ' . $len . ' bytes with ' . $remainingBytes . ' bytes to go');
 					}
+					continue; // attempt another read
 				}
 				$data .= $chunk;
 				$remainingBytes -= strlen($chunk);
