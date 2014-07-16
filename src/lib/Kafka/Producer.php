@@ -49,17 +49,57 @@ class Kafka_Producer
 	 */
 	protected $compression;
 
+    /**
+     * Send timeout in seconds.
+     *
+     * Combined with sendTimeoutUsec this is used for send timeouts.
+     *
+     * @var int
+     */
+    private $sendTimeoutSec = 0;
+
+    /**
+     * Send timeout in microseconds.
+     *
+     * Combined with sendTimeoutSec this is used for send timeouts.
+     *
+     * @var int
+     */
+    private $sendTimeoutUsec = 100000;
+
+    /**
+     * Recv timeout in seconds
+     *
+     * Combined with recvTimeoutUsec this is used for recv timeouts.
+     *
+     * @var int
+     */
+    private $recvTimeoutSec = 0;
+
+    /**
+     * Recv timeout in microseconds
+     *
+     * Combined with recvTimeoutSec this is used for recv timeouts.
+     *
+     * @var int
+     */
+    private $recvTimeoutUsec = 750000;
+
 	/**
 	 * Constructor
 	 * 
 	 * @param integer $host Host 
 	 * @param integer $port Port
 	 */
-	public function __construct($host, $port, $compression = Kafka_Encoder::COMPRESSION_GZIP) {
+	public function __construct($host, $port, $compression = Kafka_Encoder::COMPRESSION_GZIP, $recvTimeoutSec = 0, $recvTimeoutUsec = 750000, $sendTimeoutSec = 0, $sendTimeoutUsec = 100000) {
 		$this->request_key = Kafka_RequestKeys::PRODUCE;
 		$this->host        = $host;
 		$this->port        = $port;
 		$this->compression = $compression;
+        $this->recvTimeoutSec  = $recvTimeoutSec;
+        $this->recvTimeoutUsec = $recvTimeoutUsec;
+        $this->sendTimeoutSec  = $sendTimeoutSec;
+        $this->sendTimeoutUsec = $sendTimeoutUsec;
 	}
 	
 	/**
@@ -70,7 +110,7 @@ class Kafka_Producer
 	 */
 	public function connect() {
 		if (null === $this->socket) {
-			$this->socket = new Kafka_Socket($this->host, $this->port);
+			$this->socket = new Kafka_Socket($this->host, $this->port, $this->recvTimeoutSec, $this->recvTimeoutUsec, $this->sendTimeoutSec, $this->sendTimeoutUsec);
 		}
 		$this->socket->connect();
 	}
