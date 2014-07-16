@@ -45,45 +45,45 @@ class Kafka_Producer
 	/**
 	 * Compression: 0=none; 1=gzip; 2=snappy
 	 *
-     * @var integer
+	 * @var integer
 	 */
 	protected $compression;
 
-    /**
-     * Send timeout in seconds.
-     *
-     * Combined with sendTimeoutUsec this is used for send timeouts.
-     *
-     * @var int
-     */
-    private $sendTimeoutSec = 0;
+	/**
+	 * Send timeout in seconds.
+	 *
+	 * Combined with sendTimeoutUsec this is used for send timeouts.
+	 *
+	 * @var int
+	 */
+	private $sendTimeoutSec = 0;
 
-    /**
-     * Send timeout in microseconds.
-     *
-     * Combined with sendTimeoutSec this is used for send timeouts.
-     *
-     * @var int
-     */
-    private $sendTimeoutUsec = 100000;
+	/**
+	 * Send timeout in microseconds.
+	 *
+	 * Combined with sendTimeoutSec this is used for send timeouts.
+	 *
+	 * @var int
+	 */
+	private $sendTimeoutUsec = 100000;
 
-    /**
-     * Recv timeout in seconds
-     *
-     * Combined with recvTimeoutUsec this is used for recv timeouts.
-     *
-     * @var int
-     */
-    private $recvTimeoutSec = 0;
+	/**
+	 * Recv timeout in seconds	
+	 *
+	 * Combined with recvTimeoutUsec this is used for recv timeouts.
+	 *
+	 * @var int
+	 */
+	private $recvTimeoutSec = 0;
 
-    /**
-     * Recv timeout in microseconds
-     *
-     * Combined with recvTimeoutSec this is used for recv timeouts.
-     *
-     * @var int
-     */
-    private $recvTimeoutUsec = 750000;
+	/**
+	 * Recv timeout in microseconds
+	 *
+	 * Combined with recvTimeoutSec this is used for recv timeouts.
+	 *
+	 * @var int
+	*/
+	private $recvTimeoutUsec = 750000;
 
 	/**
 	 * Constructor
@@ -96,10 +96,10 @@ class Kafka_Producer
 		$this->host        = $host;
 		$this->port        = $port;
 		$this->compression = $compression;
-        $this->recvTimeoutSec  = $recvTimeoutSec;
-        $this->recvTimeoutUsec = $recvTimeoutUsec;
-        $this->sendTimeoutSec  = $sendTimeoutSec;
-        $this->sendTimeoutUsec = $sendTimeoutUsec;
+		$this->recvTimeoutSec  = $recvTimeoutSec;
+		$this->recvTimeoutUsec = $recvTimeoutUsec;
+		$this->sendTimeoutSec  = $sendTimeoutSec;
+		$this->sendTimeoutUsec = $sendTimeoutUsec;
 	}
 	
 	/**
