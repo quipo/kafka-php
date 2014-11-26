@@ -16,30 +16,34 @@ The examples directory contains an example of a Producer and a simple Consumer, 
 
 Example Producer:
 
-    $producer = new Kafka_Producer('localhost', 9092, Kafka_Encoder::COMPRESSION_NONE);
-    $messages = array('some', 'messages', 'here');
-    $topic = 'test';
-    $bytes = $producer->send($messages, $topic);
+```php
+$producer = new Kafka_Producer('localhost', 9092, Kafka_Encoder::COMPRESSION_NONE);
+$messages = array('some', 'messages', 'here');
+$topic = 'test';
+$bytes = $producer->send($messages, $topic);
+```
 
 Example Consumer:
 
-    $topic         = 'test';
-    $partition     = 0;
-    $offset        = 0;
-    $maxSize       = 1000000;
-    $socketTimeout = 5;
+```php
+$topic         = 'test';
+$partition     = 0;
+$offset        = 0;
+$maxSize       = 1000000;
+$socketTimeout = 5;
 
-    while (true) {
-        $consumer = new Kafka_SimpleConsumer('localhost', 9092, $socketTimeout, $maxSize);
-        $fetchRequest = new Kafka_FetchRequest($topic, $partition, $offset, $maxSize);
-        $messages = $consumer->fetch($fetchRequest);
-        foreach ($messages as $msg) {
-            echo "\nMessage: " . $msg->payload();
-        }
-        //advance the offset after consuming each MessageSet
-        $offset += $messages->validBytes();
-        unset($fetchRequest);
+while (true) {
+    $consumer = new Kafka_SimpleConsumer('localhost', 9092, $socketTimeout, $maxSize);
+    $fetchRequest = new Kafka_FetchRequest($topic, $partition, $offset, $maxSize);
+    $messages = $consumer->fetch($fetchRequest);
+    foreach ($messages as $msg) {
+        echo "\nMessage: " . $msg->payload();
     }
+    //advance the offset after consuming each MessageSet
+    $offset += $messages->validBytes();
+    unset($fetchRequest);
+}
+```
 
 
 ## TODO
