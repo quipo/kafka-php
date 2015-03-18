@@ -1,0 +1,15 @@
+{
+    "name": "quipo/kafka-php",
+    "description": "PHP client library for Apache Kafka",
+    "license": "Apache",
+    "authors": [
+        {
+            "name": "Lorenzo Alberton",
+            "email": "l.alberton@quipo.it"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "classmap": ["src/lib/"]
+    }
+}
