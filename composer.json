@@ -1,6 +1,6 @@
 {
     "name": "quipo/kafka-php",
-    "description": "PHP client library for Apache Kafka",
+    "description": "PHP client library for Apache Kafka 0.7",
     "license": "Apache",
     "authors": [
         {
