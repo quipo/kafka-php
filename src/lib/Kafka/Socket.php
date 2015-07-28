@@ -148,17 +148,17 @@ class Kafka_Socket
 			$this->sendTimeoutSec + ($this->sendTimeoutUsec / 1000000)
 		);
 
-		// Set to blocking mode when keeping a persistent connection,
-		// otherwise leave it as non-blocking when polling
-		@stream_set_blocking($this->stream, 0);
-		//socket_set_option($this->stream, SOL_TCP, TCP_NODELAY, 1);
-		//socket_set_option($this->stream, SOL_TCP, SO_KEEPALIVE, 1);
-
 		// Connect failed?
 		if ($this->stream === FALSE) {
 			$error = 'Could not connect to '.$this->host.':'.$this->port.' ('.$errstr.' ['.$errno.'])';
 			throw new Kafka_Exception_Socket_Connection($error);
 		}
+
+		// Set to blocking mode when keeping a persistent connection,
+		// otherwise leave it as non-blocking when polling
+		@stream_set_blocking($this->stream, 0);
+		//socket_set_option($this->stream, SOL_TCP, TCP_NODELAY, 1);
+		//socket_set_option($this->stream, SOL_TCP, SO_KEEPALIVE, 1);
 	}
 
 	/**
