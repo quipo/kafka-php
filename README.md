@@ -1,5 +1,5 @@
 # kafka-php
-kafka-php allows you to produce messages to the [Apache Kafka](http://incubator.apache.org/kafka/) distributed publish/subscribe messaging service.
+kafka-php allows you to produce messages to the [Apache Kafka](http://kafka.apache.org/) distributed publish/subscribe messaging service.
 
 ## Requirements
 
