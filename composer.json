@@ -1,7 +1,7 @@
 {
     "name": "quipo/kafka-php",
     "description": "PHP client library for Apache Kafka 0.7",
-    "license": "Apache",
+    "license": "Apache-2.0",
     "authors": [
         {
             "name": "Lorenzo Alberton",
