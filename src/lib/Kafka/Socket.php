@@ -252,10 +252,22 @@ class Kafka_Socket
 			// wait for stream to become available for writing
 			$writable = @stream_select($null, $write, $null, $this->sendTimeoutSec, $this->sendTimeoutUsec);
 			if ($writable > 0) {
-				// write remaining buffer bytes to stream
-				$wrote = fwrite($this->stream, substr($buf, $written));
+				// Set a temporary error handler to watch for Broken pipes
+				set_error_handler(function ($type, $msg, $file, $line) use ($buflen, &$written) {
+					if ($type === E_NOTICE && strpos($msg, 'Broken pipe') !== false) {
+						throw new \Kafka_Exception_Socket(
+							sprintf('Connection broken while writing %d bytes to stream, completed writing only %d bytes', $buflen, $written)
+						);
+					}
+				});
+				try {
+					// write remaining buffer bytes to stream
+					$wrote = fwrite($this->stream, substr($buf, $written));
+				} finally {
+					restore_error_handler();
+				}
 				if ($wrote === -1 || $wrote === false) {
-					throw new Kafka_Exception_Socket('Could not write ' . strlen($buf) . ' bytes to stream, completed writing only ' . $written . ' bytes');
+					throw new Kafka_Exception_Socket('Could not write ' . $buflen . ' bytes to stream, completed writing only ' . $written . ' bytes');
 				}
 				$written += $wrote;
 				continue;
