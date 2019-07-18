@@ -254,11 +254,12 @@ class Kafka_Socket
 			if ($writable > 0) {
 				// Set a temporary error handler to watch for Broken pipes
 				set_error_handler(function ($type, $msg, $file, $line) use ($buflen, &$written) {
-					if ($type === E_NOTICE && strpos($msg, 'Broken pipe') !== false) {
+					if (strpos($msg, 'Broken pipe') !== false) {
 						throw new \Kafka_Exception_Socket(
 							sprintf('Connection broken while writing %d bytes to stream, completed writing only %d bytes', $buflen, $written)
 						);
 					}
+					return false; // Allow normal error handling to continue
 				});
 				try {
 					// write remaining buffer bytes to stream
