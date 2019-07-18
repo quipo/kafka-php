@@ -275,10 +275,10 @@ class Kafka_Socket
 			if (false !== $writable) {
 				$res = stream_get_meta_data($this->stream);
 				if (!empty($res['timed_out'])) {
-					throw new Kafka_Exception_Socket_Timeout('Timed out writing ' . strlen($buf) . ' bytes to stream after writing ' . $written . ' bytes');
+					throw new Kafka_Exception_Socket_Timeout('Timed out writing ' . $buflen . ' bytes to stream after writing ' . $written . ' bytes');
 				}
 			}
-			throw new Kafka_Exception_Socket('Could not write ' . strlen($buf) . ' bytes to stream');
+			throw new Kafka_Exception_Socket('Could not write ' . $buflen . ' bytes to stream');
 		}
 		return $written;
 	}
