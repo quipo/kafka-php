@@ -75,7 +75,7 @@ class Kafka_Socket
 	/**
 	 * Socket port
 	 *
-	 * @var integer
+	 * @var int
 	 */
 	private $port = -1;
 
@@ -83,11 +83,11 @@ class Kafka_Socket
 	 * Constructor
 	 *
 	 * @param string  $host            Host
-	 * @param integer $port            Port
-	 * @param integer $recvTimeoutSec  Recv timeout in seconds
-	 * @param integer $recvTimeoutUsec Recv timeout in microseconds
-	 * @param integer $sendTimeoutSec  Send timeout in seconds
-	 * @param integer $sendTimeoutUsec Send timeout in microseconds
+	 * @param int $port            Port
+	 * @param int $recvTimeoutSec  Recv timeout in seconds
+	 * @param int $recvTimeoutUsec Recv timeout in microseconds
+	 * @param int $sendTimeoutSec  Send timeout in seconds
+	 * @param int $sendTimeoutUsec Send timeout in microseconds
 	 */
 	public function __construct($host, $port, $recvTimeoutSec = 0, $recvTimeoutUsec = 750000, $sendTimeoutSec = 0, $sendTimeoutUsec = 100000) {
 		$this->host            = $host;
@@ -103,7 +103,7 @@ class Kafka_Socket
 	 *
 	 * @param resource $stream File handle
 	 *
-	 * @return void
+	 * @return Kafka_Socket
 	 */
 	static public function createFromStream($stream) {
 		$socket = new self('localhost', 0);
@@ -125,7 +125,7 @@ class Kafka_Socket
 	/**
 	 * Connects the socket
 	 *
-	 * @return void
+	 * @return bool|null
 	 * @throws Kafka_Exception_Socket_Connection
 	 */
 	public function connect() {
@@ -178,8 +178,8 @@ class Kafka_Socket
 	 * This method will not wait for all the requested data, it will return as
 	 * soon as any data is received.
 	 *
-	 * @param integer $len               Maximum number of bytes to read.
-	 * @param boolean $verifyExactLength Throw an exception if the number of read bytes is less than $len
+	 * @param int $len               Maximum number of bytes to read.
+	 * @param bool $verifyExactLength Throw an exception if the number of read bytes is less than $len
 	 *
 	 * @return string Binary data
 	 * @throws Kafka_Exception_Socket
@@ -237,7 +237,7 @@ class Kafka_Socket
 	 *
 	 * @param string $buf The data to write
 	 *
-	 * @return integer
+	 * @return int
 	 * @throws Kafka_Exception_Socket
 	 */
 	public function write($buf) {
@@ -252,10 +252,23 @@ class Kafka_Socket
 			// wait for stream to become available for writing
 			$writable = @stream_select($null, $write, $null, $this->sendTimeoutSec, $this->sendTimeoutUsec);
 			if ($writable > 0) {
-				// write remaining buffer bytes to stream
-				$wrote = fwrite($this->stream, substr($buf, $written));
+				// Set a temporary error handler to watch for Broken pipes
+				set_error_handler(function ($type, $msg, $file, $line) use ($buflen, &$written) {
+					if (strpos($msg, 'Broken pipe') !== false) {
+						throw new \Kafka_Exception_Socket(
+							sprintf('Connection broken while writing %d bytes to stream, completed writing only %d bytes', $buflen, $written)
+						);
+					}
+					return false; // Allow normal error handling to continue
+				});
+				try {
+					// write remaining buffer bytes to stream
+					$wrote = fwrite($this->stream, substr($buf, $written));
+				} finally {
+					restore_error_handler();
+				}
 				if ($wrote === -1 || $wrote === false) {
-					throw new Kafka_Exception_Socket('Could not write ' . strlen($buf) . ' bytes to stream, completed writing only ' . $written . ' bytes');
+					throw new Kafka_Exception_Socket('Could not write ' . $buflen . ' bytes to stream, completed writing only ' . $written . ' bytes');
 				}
 				$written += $wrote;
 				continue;
@@ -263,10 +276,10 @@ class Kafka_Socket
 			if (false !== $writable) {
 				$res = stream_get_meta_data($this->stream);
 				if (!empty($res['timed_out'])) {
-					throw new Kafka_Exception_Socket_Timeout('Timed out writing ' . strlen($buf) . ' bytes to stream after writing ' . $written . ' bytes');
+					throw new Kafka_Exception_Socket_Timeout('Timed out writing ' . $buflen . ' bytes to stream after writing ' . $written . ' bytes');
 				}
 			}
-			throw new Kafka_Exception_Socket('Could not write ' . strlen($buf) . ' bytes to stream');
+			throw new Kafka_Exception_Socket('Could not write ' . $buflen . ' bytes to stream');
 		}
 		return $written;
 	}
